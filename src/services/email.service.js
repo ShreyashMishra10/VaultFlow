@@ -46,7 +46,27 @@ async function sendRegistrationEmail(userEmail, name) {
   const text = `Hello ${name},\n\nThank you for registering at VaultFlow. We're excited to have you on board!\n\nBest regards,\nThe VaultFlow Team`;
   const html = `<p>Hello ${name},</p><p>Thank you for registering at VaultFlow. We're excited to have you on board!</p><p>Best regards,<br>The VaultFlow Team</p>`;
 
-  return await sendEmail(userEmail, subject, text, html);
+  await sendEmail(userEmail, subject, text, html);
 }
 
-module.exports = sendRegistrationEmail;
+async function sendTransactionEmail(userEmail, name, amount, toAccount) {
+  const subject = "Transaction Successfull";
+  const text = `Hello ${name},\n\nYour transaction of $${amount} to account ${toAccount} was successfull.\n\nBest regards,\nThe VaultFlow Team`;
+  const html = `<p>Hello ${name},</p><p>Your transaction of $${amount} to account ${toAccount} was successfull.</p><p>Best regards,<br>The VaultFlow Team</p>`
+
+  await sendEmail(userEmail, subject, text, html);
+}
+
+async function sendTransactionFailureEmail(userEmail, name, amount, toAccount) {
+  const subject = "Transaction failed";
+  const text = `Hello ${name},\n\nWe regret to inform you that your transaction of $${amount} to account ${toAccount} was failed.\n\nBest regards,\nThe VaultFlow Team`;
+  const html = `<p>Hello ${name},</p><p>We regret to inform you that your transaction of $${amount} to account ${toAccount} was failed.</p><p>Best regards,<br>The VaultFlow Team</p>`
+
+  await sendEmail(userEmail, subject, text, html);
+}
+
+module.exports = {
+  sendRegistrationEmail,
+  sendTransactionEmail,
+  sendTransactionFailureEmail
+};
