@@ -39,7 +39,7 @@ accountSchema.methods.getBalance = async function(){
                         $cond:[
                             {
                                 $eq: ["$type", "DEBIT"]
-                            },$amount,
+                            },"$amount",
                             0
                         ]
                     }
@@ -50,7 +50,7 @@ accountSchema.methods.getBalance = async function(){
                         $cond:[
                             {
                                 $eq: ["$type", "CREDIT"]
-                            },$amount,
+                            },"$amount",
                             0
                         ]
                     }
