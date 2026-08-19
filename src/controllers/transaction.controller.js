@@ -101,20 +101,21 @@ async function createTransaction(req, res){
         })
     }
 
+    let transaaction;
+    try{
     /**
      * 5. Create transaction (PENDING)
      */
-
     const session = await mongoose.startSession()
     session.startTransaction()
 
-    const transaction = await transactionModel.create({
+    transaction = (await transactionModel.create([{
         fromAccount,
         toAccount,
         amount,
         idempotencyKey,
         status: "PENDING"
-    },{session})
+    }],{session}))[0]
 
     const debitLedgerEntry = await ledgerModel.create({
         account: fromAccount, 
@@ -136,6 +137,12 @@ async function createTransaction(req, res){
     await session.commitTransaction()
     session.endSession()
 
+    }catch(error){
+        return res.status(400).json({
+            messaage: "Transaction is pending due to some issue, please retry after some time.",
+            error: error.message
+        })
+    }
     /**
      * 10. Send email notification
      */
@@ -186,7 +193,7 @@ async function createInitialFundsTransaction(req, res){
         amount,
         idempotencyKey,
         status: "PENDING"
-    })
+    }, {session})
 
     const debitLedgerEntry = await ledgerModel.create([{
         account: fromUserAccount._id,
@@ -195,6 +202,10 @@ async function createInitialFundsTransaction(req, res){
         type: "DEBIT",
     }],{session})
 
+    await(()=>{
+        return new Promise((resolve) => setTimeout(resolve, 100 * 1000));
+    })()
+
     const creditLedgerEntry = await ledgerModel.create([{
         account: toAccount,
         amount: amount,
@@ -202,8 +213,11 @@ async function createInitialFundsTransaction(req, res){
         type: "CREDIT",
     }],{session})
 
-    transaction.status = "COMPLETED"
-    await transaction.save({session})
+    await transactionModel.findOneAndUpdate(
+        {_id: transaction._id},
+        {status: "COMPLETED"},
+        {session}
+    )
 
     await session.commitTransaction()
     session.endSession()
@@ -213,6 +227,7 @@ async function createInitialFundsTransaction(req, res){
         transaction:  transaction
     })
 }
+
 
 module.exports = {
     createTransaction,
